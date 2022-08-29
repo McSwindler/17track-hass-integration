@@ -1,4 +1,4 @@
-"""Global fixtures for integration_blueprint integration."""
+"""Global fixtures for seventeen_track integration."""
 # Fixtures allow you to replace functions with a Mock object. You can perform
 # many options via the Mock to reflect a particular behavior from the original
 # function that you want to see without going through the function's actual logic.
@@ -14,9 +14,10 @@
 #
 # See here for more info: https://docs.pytest.org/en/latest/fixture.html (note that
 # pytest includes fixtures OOB which you can use as defined on this page)
-from unittest.mock import patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+import seventeentrack
 
 pytest_plugins = "pytest_homeassistant_custom_component"
 
@@ -40,24 +41,16 @@ def skip_notifications_fixture():
         yield
 
 
-# This fixture, when used, will result in calls to async_get_data to return None. To have the call
-# return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
-@pytest.fixture(name="bypass_get_data")
-def bypass_get_data_fixture():
-    """Skip calls to get data from API."""
-    with patch(
-        "custom_components.integration_blueprint.IntegrationBlueprintApiClient.async_get_data"
-    ):
-        yield
-
-
-# In this fixture, we are forcing calls to async_get_data to raise an Exception. This is useful
-# for exception handling.
-@pytest.fixture(name="error_on_get_data")
-def error_get_data_fixture():
-    """Simulate error when retrieving data from API."""
-    with patch(
-        "custom_components.integration_blueprint.IntegrationBlueprintApiClient.async_get_data",
-        side_effect=Exception,
-    ):
-        yield
+@pytest.fixture(autouse=True)
+def mock_api():
+    """Mock api."""
+    with patch.object(
+        seventeentrack.client,
+        "Profile",
+        return_value=Mock(account_id="email@email.com"),
+    ) as mock_profile:
+        mock_profile.return_value.login = AsyncMock(return_value=True)
+        mock_profile.return_value.packages = AsyncMock(return_value=[])
+        mock_profile.return_value.summary = AsyncMock(return_value={})
+        mock_profile.return_value.add_package_with_carrier = AsyncMock()
+        yield mock_profile

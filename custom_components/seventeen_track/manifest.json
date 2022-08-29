@@ -1,0 +1,10 @@
+{
+    "domain": "seventeen_track",
+    "name": "17Track",
+    "config_flow": true,
+    "documentation": "https://github.com/McSwindler/17track-hass-integration",
+    "requirements": ["seventeentrack==2022.4.6"],
+    "codeowners": ["@McSwindler"],
+    "iot_class": "cloud_polling",
+    "loggers": ["seventeen_track"]
+  }
